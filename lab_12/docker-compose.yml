@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  nats-server:
+    image: nats:latest
+    container_name: nats_main
+    ports:
+      - "4222:4222"
+
+  filter:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: filter
+    container_name: pipeline_filter
+    depends_on:
+      - nats-server
+
+  square:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: square
+    container_name: pipeline_square
+    depends_on:
+      - nats-server
+
+  sum:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: sum
+    container_name: pipeline_sum
+    depends_on:
+      - nats-server
+
+  generator:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: generator
+    container_name: pipeline_generator
+    depends_on:
+      - filter
+      - square
+      - sum
